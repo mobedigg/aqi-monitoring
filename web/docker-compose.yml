@@ -1,11 +1,12 @@
 services:
   influx:
+    restart: unless-stopped
     image: "influxdb:2.1.1"
     ports:
       - "8086:8086"
     volumes:
-      - $PWD/data:/var/lib/influxdb2
-      - $PWD/config:/etc/influxdb2
+      - influx_storage:/var/lib/influxdb2
+      - influx_storage:/etc/influxdb2
     environment:
       DOCKER_INFLUXDB_INIT_MODE: setup
       DOCKER_INFLUXDB_INIT_USERNAME: ${DOCKER_INFLUXDB_INIT_USERNAME}
@@ -14,14 +15,16 @@ services:
       DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUXDB_BUCKET}
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_V2_TOKEN}
   grafana:
+    restart: unless-stopped
     image: "grafana/grafana:8.4.1"
     ports:
       - "3000:3000"
     volumes:
-      - $PWD/grafana:/var/lib/grafana
+      - grafana_storage:/var/lib/grafana
     depends_on:
       - "influx"
   backend:
+    restart: unless-stopped
     build: .
     ports:
       - "8000:80"
@@ -32,3 +35,7 @@ services:
       INFLUXDB_V2_ORG: ${INFLUXDB_V2_ORG}
       INFLUXDB_V2_TOKEN: ${INFLUXDB_V2_TOKEN}
       INFLUXDB_BUCKET: ${INFLUXDB_BUCKET}
+
+volumes:
+  grafana_storage:
+  influx_storage:
